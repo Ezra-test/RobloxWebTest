@@ -3,98 +3,281 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Roblox Converter</title>
+<title>Username to Roblox Link Converter</title>
 <style>
-body{font-family:Arial;margin:20px;transition:all .3s}.d{background:#121212;color:#fff}.l{background:#fff;color:#000}.c{max-width:600px;margin:auto;position:relative}.i{margin-bottom:20px}textarea{width:100%;height:150px;padding:10px;display:none;border:1px solid #ccc}.lk{margin-top:20px}.li{margin-bottom:10px;display:flex;justify-content:space-between}.cp{padding:5px 10px;cursor:pointer}.sb{position:fixed;right:0;top:0;height:100vh;width:30px}.pb{height:0%;background:#4CAF50;transition:height .2s}.pw{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.pi{padding:10px;margin-bottom:10px}.sw{position:fixed;top:20px;right:20px;font-size:24px;cursor:pointer}
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+.light-mode {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+    position: relative;
+}
+
+.input-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+textarea {
+    width: 100%;
+    height: 150px;
+    padding: 10px;
+    font-size: 14px;
+    background-color: inherit;
+    color: inherit;
+    border: 1px solid #ccc;
+    display: none;
+}
+
+.links {
+    margin-top: 20px;
+}
+
+.link-item {
+    margin-bottom: 10px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.link-item a {
+    text-decoration: none;
+    color: blue;
+}
+
+.link-item a.visited {
+    color: purple;
+}
+
+.link-item a:hover {
+    text-decoration: underline;
+}
+
+.copy-password-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+    cursor: pointer;
+    border: none;
+    background-color: #ccc;
+    color: black;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.copy-password-btn:hover {
+    background-color: #aaa;
+}
+
+.copy-password-btn.purple {
+    background-color: purple;
+    color: white;
+}
+
+.copy-password-btn.copied {
+    background-color: #4CAF50 !important;
+}
+
+.switch-mode-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    z-index: 1001;
+}
+
+.dark-mode .switch-mode-btn {
+    filter: invert(1);
+}
+
+.toggle-input-btn {
+    margin-left: 10px;
+}
+
+.sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+    width: 30px;
+    z-index: 1000;
+}
+
+.dark-mode .sidebar {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.light-mode .sidebar {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    background-color: #4CAF50;
+    transition: height 0.2s ease;
+}
+
+.percentage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    mix-blend-mode: difference;
+}
 </style>
 </head>
-<body class="d">
-<div class="pw"><input type="password" id="p" class="pi" placeholder="🔑 Password"><button onclick="check()">🔓</button></div>
-<div class="c" style="display:none">
-  <h1>🔗 Roblox Link Converter</h1>
-  <div class="i"><input type="file" id="f" accept=".txt"><button onclick="toggleInput()" id="t">📥 Show Input</button></div>
-  <textarea id="input"></textarea>
-  <button onclick="convert()">🔄 Convert</button>
-  <button onclick="sortLinks()">🔃 Sort</button>
-  <div class="lk" id="links"></div>
-  <button class="sw" onclick="toggleMode()">🌓</button>
+<body class="dark-mode">
+<div class="container">
+    <h1>Username to Roblox Link Converter</h1>
+    <div class="input-container">
+        <input type="file" id="fileInput" accept=".txt">
+        <button class="toggle-input-btn" onclick="toggleInput()" id="toggleInput">Show Input</button>
+    </div>
+    <textarea id="input" placeholder="Enter usernames in the format username:password, one per line"></textarea>
+    <button onclick="convertToLinks()">Convert to Links</button>
+    <button onclick="sortLinks()">Sort by Length</button>
+    
+    <div class="links" id="links"></div>
+    <button class="switch-mode-btn" onclick="toggleMode()">🌓</button>
 </div>
-<div class="sb"><div class="pb" id="progress"></div></div>
+
+<div class="sidebar">
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="percentage" id="percentage">0%</div>
+</div>
 
 <script>
-function check(){
-  const pass = btoa(document.getElementById("p").value) === "MTIzNDU2Nzg=";
-  if(pass){
-    document.querySelector(".pw").style.display = "none";
-    document.querySelector(".c").style.display = "block";
-  } else {
-    alert("❌ Invalid Password"); 
-    location.reload();
-  }
-}
-
-function toggleMode(){
-  document.body.classList.toggle("d");
-  document.body.classList.toggle("l");
-  document.querySelector(".sw").textContent = document.body.classList.contains("d") ? "🌓" : "🌞";
-}
-
-function toggleInput(){
-  const ta = document.getElementById("input");
-  ta.style.display = ta.style.display === "none" ? "block" : "none";
-  document.getElementById("t").textContent = ta.style.display === "none" ? "📥 Show Input" : "📤 Hide Input";
-}
-
-document.getElementById("f").addEventListener("change", function(e){
-  const file = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e) { document.getElementById("input").value = e.target.result; };
-  reader.readAsText(file);
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('input').value = e.target.result;
+    };
+    reader.readAsText(file);
 });
 
-function convert(){
-  const lines = document.getElementById("input").value.split("\n");
-  const container = document.getElementById("links");
-  container.innerHTML = "";
-  
-  lines.forEach(line => {
-    const [user, pass] = line.split(":");
-    if(!user || !pass) return;
-    
-    const div = document.createElement("div");
-    div.className = "li";
-    
-    const a = document.createElement("a");
-    a.href = `https://www.roblox.com/search/users?keyword=${user}`;
-    a.textContent = user;
-    a.onclick = function() { navigator.clipboard.writeText(user); };
-    
-    const btn = document.createElement("button");
-    btn.className = "cp";
-    btn.textContent = "🔒 Copy Pass";
-    btn.onclick = function() { 
-      navigator.clipboard.writeText(pass);
-      btn.textContent = "✅ Copied!";
-      setTimeout(() => btn.textContent = "🔒 Copy Pass", 1500);
-    };
-    
-    div.append(a, btn);
-    container.appendChild(div);
-  });
+function convertToLinks() {
+    const input = document.getElementById('input').value;
+    const linksContainer = document.getElementById('links');
+    linksContainer.innerHTML = '';
+
+    if (!input.trim()) {
+        alert('Please enter valid username:password pairs.');
+        return;
+    }
+
+    const lines = input.split('\n');
+    lines.forEach(line => {
+        const [username, password] = line.split(':');
+        if (username && password) {
+            const linkItem = document.createElement('div');
+            linkItem.className = 'link-item';
+
+            const a = document.createElement('a');
+            a.href = `https://www.roblox.com/search/users?keyword=${encodeURIComponent(username)}`;
+            a.target = '_blank';
+            a.textContent = username;
+            a.onclick = function() {
+                navigator.clipboard.writeText(username);
+                document.querySelectorAll('.copy-password-btn').forEach(btn => {
+                    btn.textContent = 'Copy Password';
+                    btn.classList.remove('purple', 'copied');
+                });
+                copyBtn.classList.add('purple');
+                a.classList.add('visited');
+                return true;
+            };
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-password-btn';
+            copyBtn.textContent = 'Copy Password';
+            copyBtn.onclick = () => {
+                navigator.clipboard.writeText(password);
+                copyBtn.textContent = 'Copied!';
+                copyBtn.classList.add('copied');
+                setTimeout(() => {
+                    copyBtn.textContent = 'Copy Password';
+                    copyBtn.classList.remove('copied');
+                }, 1500);
+            };
+
+            linkItem.appendChild(a);
+            linkItem.appendChild(copyBtn);
+            linksContainer.appendChild(linkItem);
+        }
+    });
 }
 
-function sortLinks(){
-  const container = document.getElementById("links");
-  const items = Array.from(container.children);
-  items.sort((a,b) => a.querySelector("a").textContent.length - b.querySelector("a").textContent.length);
-  container.innerHTML = "";
-  items.forEach(item => container.appendChild(item));
+function toggleMode() {
+    const body = document.body;
+    const modeBtn = document.querySelector('.switch-mode-btn');
+    
+    body.classList.toggle('dark-mode');
+    body.classList.toggle('light-mode');
+    
+    if (body.classList.contains('dark-mode')) {
+        modeBtn.textContent = '🌓';
+    } else {
+        modeBtn.textContent = '🌞';
+    }
 }
 
-window.addEventListener("scroll", () => {
-  const scrolled = (document.documentElement.scrollTop / 
-    (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
-  document.getElementById("progress").style.height = `${scrolled}%`;
+function toggleInput() {
+    const textarea = document.getElementById('input');
+    const toggleBtn = document.getElementById('toggleInput');
+    if (textarea.style.display === 'none') {
+        textarea.style.display = 'block';
+        toggleBtn.textContent = 'Hide Input';
+    } else {
+        textarea.style.display = 'none';
+        toggleBtn.textContent = 'Show Input';
+    }
+}
+
+function sortLinks() {
+    const linksContainer = document.getElementById('links');
+    const linkItems = Array.from(linksContainer.getElementsByClassName('link-item'));
+    
+    linkItems.sort((a, b) => {
+        const aLength = a.querySelector('a').textContent.length;
+        const bLength = b.querySelector('a').textContent.length;
+        return aLength - bLength;
+    });
+
+    linksContainer.innerHTML = '';
+    linkItems.forEach(item => linksContainer.appendChild(item));
+}
+
+window.addEventListener('scroll', () => {
+    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    const scrolled = (scrollTop / scrollHeight) * 100;
+    
+    document.getElementById('progressBar').style.height = `${scrolled}%`;
+    document.getElementById('percentage').textContent = `${Math.round(scrolled)}%`;
 });
 </script>
 </body>
