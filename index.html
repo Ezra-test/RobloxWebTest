@@ -3,99 +3,157 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Secure Roblox Converter</title>
+<title>Username to Roblox Link Converter</title>
 <style>
-body{font-family:Arial;margin:20px;transition:all .3s}.d{background:#121212;color:#fff}.l{background:#fff;color:#000}.c{max-width:600px;margin:auto;position:relative}.i{margin-bottom:20px}textarea{width:100%;height:150px;padding:10px;display:none;border:1px solid #ccc}.lk{margin-top:20px}.li{margin-bottom:10px;display:flex;justify-content:space-between}.cp{padding:5px 10px;cursor:pointer}.sb{position:fixed;right:0;top:0;height:100vh;width:30px}.pb{height:0%;background:#4CAF50;transition:height .2s}.pw{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}.pi{padding:10px;margin-bottom:10px}.sw{position:fixed;top:20px;right:20px;font-size:24px;cursor:pointer}
+body {
+font-family: Arial, sans-serif;
+margin: 20px;
+transition: background-color 0.3s, color 0.3s;
+}
+  
+/* Dark mode styles */
+.dark-mode {
+background-color: #121212;
+color: #ffffff;
+}
+  
+.light-mode {
+background-color: #ffffff;
+color: #000000;
+}
+  
+.container {
+max-width: 600px;
+margin: auto;
+position: relative; /* Position relative for absolute positioning of the toggle button */
+}
+textarea {
+width: 100%;
+height: 150px;
+margin-bottom: 20px;
+padding: 10px;
+font-size: 14px;
+background-color: inherit;
+color: inherit;
+border: 1px solid #ccc;
+}
+.links {
+margin-top: 20px;
+}
+.link-item {
+margin-bottom: 10px;
+display: flex; /* Use flexbox to arrange elements */
+gap: 10px; /* Add some space between elements */
+align-items: center; /* Align items vertically */
+justify-content: space-between; /* Push link and text apart */
+}
+.link-item a {
+text-decoration: none;
+color: blue; /* Set link color to blue */
+}
+.link-item a:hover {
+text-decoration: underline;
+}
+.link-item a:visited {
+color: purple; /* Change visited links to purple */
+}
+.copy-password-btn {
+padding: 5px 10px;
+font-size: 12px;
+cursor: pointer;
+border: none;
+background-color: #ccc;
+color: black;
+transition: background-color 0.3s, color 0.3s;
+}
+.copy-password-btn:hover {
+background-color: #aaa;
+}
+.copy-password-btn.purple {
+background-color: purple;
+color: white;
+}
+.switch-mode-btn {
+position: absolute; /* Position the toggle button absolutely */
+top: 10px;
+right: 10px;
+padding: 8px 12px;
+font-size: 14px;
+cursor: pointer;
+border: none;
+background-color: transparent;
+color: inherit;
+}
 </style>
 </head>
-<body class="d">
-<div class="pw"><input type="password" id="p" class="pi" placeholder="🔑 Password"><button onclick="check()">🔓</button></div>
-<div class="c" style="display:none">
-  <h1>🔗 Roblox Link Converter</h1>
-  <div class="i"><input type="file" id="f" accept=".txt"><button onclick="toggleInput()" id="t">📥 Show Input</button></div>
-  <textarea id="input"></textarea>
-  <button onclick="convert()">🔄 Convert</button>
-  <button onclick="sortLinks()">🔃 Sort</button>
-  <div class="lk" id="links"></div>
-  <button class="sw" onclick="toggleMode()">🌓</button>
-</div>
-<div class="sb"><div class="pb" id="progress"></div></div>
-
-<script>
-function check(){
-  const pass = btoa(document.getElementById("p").value) === "MTIzNDU2Nzg=";
-  if(pass){
-    document.querySelector(".pw").style.display = "none";
-    document.querySelector(".c").style.display = "block";
-  } else {
-    alert("❌ Invalid Password"); 
-    location.reload();
-  }
-}
-
-function toggleMode(){
-  document.body.classList.toggle("d");
-  document.body.classList.toggle("l");
-  document.querySelector(".sw").textContent = document.body.classList.contains("d") ? "🌓" : "🌞";
-}
-
-function toggleInput(){
-  const ta = document.getElementById("input");
-  ta.style.display = ta.style.display === "none" ? "block" : "none";
-  document.getElementById("t").textContent = ta.style.display === "none" ? "📥 Show Input" : "📤 Hide Input";
-}
-
-document.getElementById("f").addEventListener("change", function(e){
-  const file = e.target.files[0];
-  const reader = new FileReader();
-  reader.onload = function(e) { document.getElementById("input").value = e.target.result; };
-  reader.readAsText(file);
-});
-
-function convert(){
-  const lines = document.getElementById("input").value.split("\n");
-  const container = document.getElementById("links");
-  container.innerHTML = "";
+<body class="dark-mode">
   
-  lines.forEach(line => {
-    const [user, pass] = line.split(":");
-    if(!user || !pass) return;
-    
-    const div = document.createElement("div");
-    div.className = "li";
-    
-    const a = document.createElement("a");
-    a.href = `https://www.roblox.com/search/users?keyword=${user}`;
-    a.textContent = user;
-    a.onclick = function() { navigator.clipboard.writeText(user); };
-    
-    const btn = document.createElement("button");
-    btn.className = "cp";
-    btn.textContent = "🔒 Copy Pass";
-    btn.onclick = function() { 
-      navigator.clipboard.writeText(pass);
-      btn.textContent = "✅ Copied!";
-      setTimeout(() => btn.textContent = "🔒 Copy Pass", 1500);
-    };
-    
-    div.append(a, btn);
-    container.appendChild(div);
-  });
+<div class="container">
+<h1>Username to Roblox Link Converter</h1>
+<input type="file" id="fileInput" accept=".txt">
+<textarea id="input" placeholder="Enter usernames in the format username:password, one per line"></textarea>
+<button onclick="convertToLinks()">Convert to Links</button>
+  
+<div class="links" id="links">
+<!-- Links will be generated here -->
+</div>
+  
+<div class="switch-mode-btn" onclick="toggleMode()">Toggle Mode</div>
+</div>
+  
+<script>
+function convertToLinks() {
+const input = document.getElementById('input').value;
+const linksContainer = document.getElementById('links');
+linksContainer.innerHTML = ''; // Clear existing links
+  
+if (!input.trim()) {
+alert('Please enter valid username:password pairs.');
+return;
 }
-
-function sortLinks(){
-  const container = document.getElementById("links");
-  const items = Array.from(container.children);
-  items.sort((a,b) => a.querySelector("a").textContent.length - b.querySelector("a").textContent.length);
-  container.innerHTML = "";
-  items.forEach(item => container.appendChild(item));
+  
+const lines = input.split('\n');
+lines.forEach(line => {
+const [username, password] = line.split(':');
+if (username && password) {
+const linkItem = document.createElement('div');
+linkItem.className = 'link-item';
+  
+const a = document.createElement('a');
+a.href = `https://www.roblox.com/search/users?keyword=${encodeURIComponent(username)}`;
+a.target = '_blank'; // Open in new tab
+a.textContent = username;
+a.onclick = () => {
+navigator.clipboard.writeText(username);
+document.querySelectorAll('.copy-password-btn').forEach(btn => btn.classList.remove('purple'));
+const copyBtn = linkItem.querySelector('.copy-password-btn');
+if (copyBtn) {
+copyBtn.classList.add('purple');
 }
-
-window.addEventListener("scroll", () => {
-  const scrolled = (document.documentElement.scrollTop / 
-    (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
-  document.getElementById("progress").style.height = `${scrolled}%`;
+};
+  
+const passwordSpan = document.createElement('span');
+  
+const copyBtn = document.createElement('button');
+copyBtn.className = 'copy-password-btn';
+copyBtn.textContent = 'Copy Password';
+copyBtn.onclick = () => {
+navigator.clipboard.writeText(password);
+};
+  
+linkItem.appendChild(a);
+linkItem.appendChild(passwordSpan);
+linkItem.appendChild(copyBtn);
+  
+linksContainer.appendChild(linkItem);
+}
 });
+}
+  
+function toggleMode() {
+document.body.classList.toggle('dark-mode');
+document.body.classList.toggle('light-mode');
+}
 </script>
 </body>
 </html>
