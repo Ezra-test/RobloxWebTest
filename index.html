@@ -1,284 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Username to Roblox Link Converter</title>
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.dark-mode {
-    background-color: #121212;
-    color: #ffffff;
-}
-
-.light-mode {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-.container {
-    max-width: 600px;
-    margin: auto;
-    position: relative;
-}
-
-.input-container {
-    position: relative;
-    margin-bottom: 20px;
-}
-
-textarea {
-    width: 100%;
-    height: 150px;
-    padding: 10px;
-    font-size: 14px;
-    background-color: inherit;
-    color: inherit;
-    border: 1px solid #ccc;
-    display: none;
-}
-
-.links {
-    margin-top: 20px;
-}
-
-.link-item {
-    margin-bottom: 10px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.link-item a {
-    text-decoration: none;
-    color: blue;
-}
-
-.link-item a.visited {
-    color: purple;
-}
-
-.link-item a:hover {
-    text-decoration: underline;
-}
-
-.copy-password-btn {
-    padding: 5px 10px;
-    font-size: 12px;
-    cursor: pointer;
-    border: none;
-    background-color: #ccc;
-    color: black;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.copy-password-btn:hover {
-    background-color: #aaa;
-}
-
-.copy-password-btn.purple {
-    background-color: purple;
-    color: white;
-}
-
-.copy-password-btn.copied {
-    background-color: #4CAF50 !important;
-}
-
-.switch-mode-btn {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    font-size: 24px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
-    z-index: 1001;
-}
-
-.dark-mode .switch-mode-btn {
-    filter: invert(1);
-}
-
-.toggle-input-btn {
-    margin-left: 10px;
-}
-
-.sidebar {
-    position: fixed;
-    right: 0;
-    top: 0;
-    height: 100vh;
-    width: 30px;
-    z-index: 1000;
-}
-
-.dark-mode .sidebar {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.light-mode .sidebar {
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
-.progress-bar {
-    position: absolute;
-    top: 0;
-    width: 100%;
-    background-color: #4CAF50;
-    transition: height 0.2s ease;
-}
-
-.percentage {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 12px;
-    mix-blend-mode: difference;
-}
-</style>
+    <title>Roblox Bulk Login</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #121212; 
+            color: #ffffff; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .link { 
+            margin: 10px 0; 
+            display: block; 
+            color: #bb86fc;
+            text-decoration: none;
+        }
+        .link:hover {
+            text-decoration: underline;
+        }
+        .dark-mode {
+            background-color: #121212; 
+            color: #ffffff;
+        }
+        .light-mode {
+            background-color: #ffffff; 
+            color: #000000;
+        }
+        .toggle-button {
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background-color: #bb86fc;
+            color: #121212;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .toggle-button:hover {
+            background-color: #3700b3;
+        }
+    </style>
 </head>
 <body class="dark-mode">
-<div class="container">
-    <h1>Username to Roblox Link Converter</h1>
-    <div class="input-container">
-        <input type="file" id="fileInput" accept=".txt">
-        <button class="toggle-input-btn" onclick="toggleInput()" id="toggleInput">Show Input</button>
-    </div>
-    <textarea id="input" placeholder="Enter usernames in the format username:password, one per line"></textarea>
-    <button onclick="convertToLinks()">Convert to Links</button>
-    <button onclick="sortLinks()">Sort by Length</button>
-    
-    <div class="links" id="links"></div>
-    <button class="switch-mode-btn" onclick="toggleMode()">🌓</button>
-</div>
+    <h1>Roblox Bulk Login</h1>
+    <button id="toggleMode" class="toggle-button">Switch to Light Mode</button>
+    <input type="file" id="fileInput" accept=".txt">
+    <div id="links"></div>
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    processFileContents(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
 
-<div class="sidebar">
-    <div class="progress-bar" id="progressBar"></div>
-    <div class="percentage" id="percentage">0%</div>
-</div>
-
-<script>
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        document.getElementById('input').value = e.target.result;
-    };
-    reader.readAsText(file);
-});
-
-function convertToLinks() {
-    const input = document.getElementById('input').value;
-    const linksContainer = document.getElementById('links');
-    linksContainer.innerHTML = '';
-
-    if (!input.trim()) {
-        alert('Please enter valid username:password pairs.');
-        return;
-    }
-
-    const lines = input.split('\n');
-    lines.forEach(line => {
-        const [username, password] = line.split(':');
-        if (username && password) {
-            const linkItem = document.createElement('div');
-            linkItem.className = 'link-item';
-
-            const a = document.createElement('a');
-            a.href = `https://www.roblox.com/search/users?keyword=${encodeURIComponent(username)}`;
-            a.target = '_blank';
-            a.textContent = username;
-            a.onclick = function() {
-                navigator.clipboard.writeText(username);
-                document.querySelectorAll('.copy-password-btn').forEach(btn => {
-                    btn.textContent = 'Copy Password';
-                    btn.classList.remove('purple', 'copied');
-                });
-                copyBtn.classList.add('purple');
-                a.classList.add('visited');
-                return true;
-            };
-
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-password-btn';
-            copyBtn.textContent = 'Copy Password';
-            copyBtn.onclick = () => {
-                navigator.clipboard.writeText(password);
-                copyBtn.textContent = 'Copied!';
-                copyBtn.classList.add('copied');
-                setTimeout(() => {
-                    copyBtn.textContent = 'Copy Password';
-                    copyBtn.classList.remove('copied');
-                }, 1500);
-            };
-
-            linkItem.appendChild(a);
-            linkItem.appendChild(copyBtn);
-            linksContainer.appendChild(linkItem);
+        function processFileContents(content) {
+            // Process and validate lines
+            const users = content.split('\n')
+                .map(line => line.trim())
+                .filter(line => line.includes(':'))
+                .filter(line => line.length > 0);
+            // Create chunks of 10 users
+            const chunks = [];
+            for (let i = 0; i < users.length; i += 10) {
+                chunks.push(users.slice(i, i + 10));
+            }
+            // Generate links
+            const linksDiv = document.getElementById('links');
+            linksDiv.innerHTML = '';
+            
+            chunks.forEach((chunk, index) => {
+                const urlParams = chunk.join('&');
+                const url = `https://rologin.link/?login=${urlParams}`;
+                
+                const link = document.createElement('a');
+                link.href = url;
+                link.className = 'link';
+                link.textContent = `Group ${index + 1} (${chunk.length} users)`;
+                link.target = '_blank'; // Ensures the link opens in a new tab
+                
+                linksDiv.appendChild(link);
+            });
         }
-    });
-}
 
-function toggleMode() {
-    const body = document.body;
-    const modeBtn = document.querySelector('.switch-mode-btn');
-    
-    body.classList.toggle('dark-mode');
-    body.classList.toggle('light-mode');
-    
-    if (body.classList.contains('dark-mode')) {
-        modeBtn.textContent = '🌓';
-    } else {
-        modeBtn.textContent = '🌞';
-    }
-}
+        // Dark/Light mode toggle logic
+        const toggleButton = document.getElementById('toggleMode');
+        const body = document.body;
 
-function toggleInput() {
-    const textarea = document.getElementById('input');
-    const toggleBtn = document.getElementById('toggleInput');
-    if (textarea.style.display === 'none') {
-        textarea.style.display = 'block';
-        toggleBtn.textContent = 'Hide Input';
-    } else {
-        textarea.style.display = 'none';
-        toggleBtn.textContent = 'Show Input';
-    }
-}
-
-function sortLinks() {
-    const linksContainer = document.getElementById('links');
-    const linkItems = Array.from(linksContainer.getElementsByClassName('link-item'));
-    
-    linkItems.sort((a, b) => {
-        const aLength = a.querySelector('a').textContent.length;
-        const bLength = b.querySelector('a').textContent.length;
-        return aLength - bLength;
-    });
-
-    linksContainer.innerHTML = '';
-    linkItems.forEach(item => linksContainer.appendChild(item));
-}
-
-window.addEventListener('scroll', () => {
-    const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-    const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-    const scrolled = (scrollTop / scrollHeight) * 100;
-    
-    document.getElementById('progressBar').style.height = `${scrolled}%`;
-    document.getElementById('percentage').textContent = `${Math.round(scrolled)}%`;
-});
-</script>
+        toggleButton.addEventListener('click', () => {
+            if (body.classList.contains('dark-mode')) {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                toggleButton.textContent = 'Switch to Dark Mode';
+            } else {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                toggleButton.textContent = 'Switch to Light Mode';
+            }
+        });
+    </script>
 </body>
 </html>
